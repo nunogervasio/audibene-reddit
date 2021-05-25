@@ -2,17 +2,9 @@ const fetch = require("node-fetch");
 
 /**
  *
- * @param {number} id  - id of user to find
- * @param {array} users - list of all users
- * @returns {array} - list of users selected subreddits
+ * @param {string} subreddit
+ * @returns {object}
  */
-function getUserSubreddits(id, users) {
-  const user = users.find((user) => user.id === id);
-  // TODO: ERROR HANDLE FOR USER NOT FOUND
-  const userSubreddits = user.subreddits;
-  return userSubreddits;
-}
-
 async function getRedditFeeds(subreddit) {
   try {
     const response = await fetch(
@@ -31,52 +23,45 @@ async function getRedditFeeds(subreddit) {
   }
 }
 
-async function createPayloadForNewsletter(id, users) {
-  const userSubreddits = getUserSubreddits(id, users);
+/**
+ *
+ * @param {object} user
+ * @returns {array}
+ */
+async function createPayloadForNewsletter(user) {
+  const userSubreddits = user.subreddits;
 
   let listOfSubredditData = [];
 
   for (let i = 0; i < userSubreddits.length; i++) {
     const redditfeed = await getRedditFeeds(userSubreddits[i]);
-    
+
     for (let j = 0; j < redditfeed.length; j++) {
-        const redditFeedData = await extractDataForPayoad(redditfeed[j])
-        listOfSubredditData.push(redditFeedData);
+      const redditFeedData = await extractDataForPayoad(redditfeed[j], user);
+
+      listOfSubredditData.push(redditFeedData);
     }
-    // return redditfeed
   }
-    return listOfSubredditData;
+  return listOfSubredditData;
 }
 
 /**
- * 
- * @param {array} redditfeed 
- * @returns 
+ *
+ * @param {array} redditfeed
+ * @param {object} user
+ * @returns {object}
  */
-async function extractDataForPayoad(redditfeed) {
+async function extractDataForPayoad(redditfeed, user) {
+  const payloadDataObject = {};
+  payloadDataObject.subreddit = redditfeed.data.subreddit;
+  payloadDataObject.headline = redditfeed.data.title;
+  payloadDataObject.score = redditfeed.data.score;
+  payloadDataObject.url_path = `https://www.reddit.com/r/${redditfeed.data.subreddit}`;
+  payloadDataObject.user_name = user.name;
+  payloadDataObject.newsletter_sendout = user.newsletter_sendout;
+  payloadDataObject.newsletter_active = user.newsletter_active;
 
-    const payloadDataObject = {}
-    payloadDataObject.subreddit = redditfeed.data.subreddit
-    payloadDataObject.headline = redditfeed.data.title
-    payloadDataObject.score = redditfeed.data.score
-    payloadDataObject.url_path = `https://www.reddit.com/r/${redditfeed.data.subreddit}`
-
-    return payloadDataObject
-  
-
-    // data.preview.images[0].resolutions[0]
+  return payloadDataObject;
 }
-
-
-// function createNewsletterHeaders(subreddit) {
-//     const headersObject = {}
-
-//     headersObject.subreddit_name = subreddit
-//     headersObject.subreddit_url_path = `https://www.reddit.com/r/${subreddit}/top`
-//     headersObject.data = []
-
-    
-//     return headersObject
-// }
 
 module.exports = { createPayloadForNewsletter };

@@ -1,44 +1,29 @@
 const express = require("express");
 const router = express.Router();
+const { users } = require('../db/users')
 
-const users = [
-  {
-    id: 1,
-    name: "aleks",
-    subreddits: ["funny"],
-    newsletter_sendout: "08:00",
-    newsletter_active: true,
-  },
-  {
-    id: 2,
-    name: "nuno",
-    subreddits: ["technology", "funny"],
-    newsletter_sendout: "08:00",
-    newsletter_active: true,
-  },
-];
 
-// get all users
+ /** Get all users */
 router.get("/", (req, res) => {
-  // res.send(users)
   res.status(200).json({
     status: "sucess",
     data: users,
   });
 });
-// get single user
+
+ /** Get single user */
 router.get("/:id", (req, res) => {
   const user = users.find((c) => c.id === parseInt(req.params.id));
   if (!user)
     return res.status(404).send("The user with the givin id was not found.");
 
-  //    res.send(user)
   res.status(200).json({
     status: "sucess",
     data: user,
   });
 });
-// create user
+
+ /** Create single user */
 router.post("/", (req, res) => {
   const user = {
     id: users.length + 1,
@@ -47,17 +32,17 @@ router.post("/", (req, res) => {
     newsletter_sendout: "08:00",
     newsletter_active: true,
   };
+
   users.push(user);
 
-  // res.send(user)
   res.status(200).json({
     status: "sucess",
     data: user,
   });
 });
-// update user
+
+ /** Update single user */
 router.patch("/:id", (req, res) => {
-  // get and validate user
   const user = users.find((c) => c.id === parseInt(req.params.id));
   if (!user)
     return res.status(404).send("The user with the givin id was not found.");
@@ -73,4 +58,3 @@ router.patch("/:id", (req, res) => {
 });
 
 module.exports = router;
-module.exports.users = users;

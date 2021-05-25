@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { createPayloadForNewsletter } = require("../api/createPayload");
-const { users } = require("./users");
+const { users } = require('../db/users')
 
 router.post("/:id", async (req, res) => {
   try {
@@ -9,18 +9,11 @@ router.post("/:id", async (req, res) => {
     if (!user)
       return res.status(404).send("The user with the givin id was not found.");
 
-    const payloadForMailService = await createPayloadForNewsletter(
-      parseInt(req.params.id),
-      users
-    );
+    const payloadForMailService = await createPayloadForNewsletter(user);
     res.send(payloadForMailService);
   } catch (err) {
     console.log(err.message);
   }
-  // res.status(200).json({
-  //     status: 'sucess',
-  //     data: payloadForMailService
-  //     })
 });
 
 module.exports = router;
